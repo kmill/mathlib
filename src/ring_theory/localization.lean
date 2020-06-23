@@ -772,6 +772,10 @@ protected theorem injective [comm_ring K] (φ : fraction_map R K) :
   injective φ.to_map :=
 φ.to_map.injective_iff.2 (λ _ h, φ.to_map_eq_zero_iff.mpr h)
 
+protected lemma map_ne_zero_of_mem_non_zero_divisors [comm_ring K] (φ : fraction_map A K)
+  (x : non_zero_divisors A) : φ.to_map x ≠ 0 :=
+map_ne_zero_of_mem_non_zero_divisors φ.injective
+
 local attribute [instance] classical.dec_eq
 
 /-- A `comm_ring` `K` which is the localization of an integral domain `R` at `R - {0}` is an
@@ -818,8 +822,7 @@ variables {B : Type*} [integral_domain B] [field K] {L : Type*} [field L]
   (f : fraction_map A K) {g : A →+* L}
 
 lemma mk'_eq_div {r s} : f.mk' r s = f.to_map r / f.to_map s :=
-f.mk'_eq_iff_eq_mul.2 $ (div_mul_cancel _
-    (map_ne_zero_of_mem_non_zero_divisors f.injective)).symm
+f.mk'_eq_iff_eq_mul.2 $ (div_mul_cancel _ f.map_ne_zero_of_mem_non_zero_divisors).symm
 
 lemma is_unit_map_of_injective (hg : injective g)
   (y : non_zero_divisors A) : is_unit (g y) :=
