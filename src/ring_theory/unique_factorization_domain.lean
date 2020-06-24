@@ -455,3 +455,13 @@ def unique_factorization_domain.to_gcd_domain
   .. ‹normalization_domain α› }
 
 end
+
+namespace unique_factorization_domain
+variables {R : Type*} [integral_domain R] [unique_factorization_domain R]
+
+lemma is_unit_of_no_prime_factor {a : R} :
+  a ≠ 0 → (∀ {p}, prime p → ¬ p ∣ a) → is_unit a :=
+induction_on_prime a (absurd rfl) (λ a ha _ _, ha)
+  (λ a p _ hp ih _ no_factor, absurd (dvd_mul_right p a) (no_factor hp))
+
+end unique_factorization_domain
