@@ -1,12 +1,11 @@
 /-
 Copyright (c) 2017 Johannes Hölzl. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
-Authors: Johannes Hölzl, Mario Carneiro
+Authors: Johannes Hölzl, Mario Carneiro, Floris van Doorn
 
 Subtype of open subsets in a topological space.
 -/
 import topology.bases
-import topology.separation
 
 open filter
 variables {α : Type*} {β : Type*} [topological_space α] [topological_space β]
@@ -16,33 +15,12 @@ variable (α)
 /-- The type of open subsets of a topological space. -/
 def opens := {s : set α // is_open s}
 
-/-- The type of closed subsets of a topological space. -/
-def closeds := {s : set α // is_closed s}
-
-/-- The type of non-empty compact subsets of a topological space. The
-non-emptiness will be useful in metric spaces, as we will be able to put
-a distance (and not merely an edistance) on this space. -/
-def nonempty_compacts := {s : set α // s.nonempty ∧ compact s}
-
-section nonempty_compacts
-open topological_space set
-variable {α}
-
-instance nonempty_compacts.to_compact_space {p : nonempty_compacts α} : compact_space p.val :=
-⟨compact_iff_compact_univ.1 p.property.2⟩
-
-instance nonempty_compacts.to_nonempty {p : nonempty_compacts α} : nonempty p.val :=
-p.property.1.to_subtype
-
-/-- Associate to a nonempty compact subset the corresponding closed subset -/
-def nonempty_compacts.to_closeds [t2_space α] : nonempty_compacts α → closeds α :=
-set.inclusion $ λ s hs, closed_of_compact _ hs.2
-
-end nonempty_compacts
-
 variable {α}
 namespace opens
 instance : has_coe (opens α) (set α) := { coe := subtype.val }
+
+/- should this be a simp lemma? -/
+lemma val_eq_coe (U : opens α) : U.1 = ↑U := rfl
 
 instance : has_subset (opens α) :=
 { subset := λ U V, U.val ⊆ V.val }
@@ -99,6 +77,7 @@ instance : has_union (opens α) := ⟨λ U V, U ⊔ V⟩
 instance : has_emptyc (opens α) := ⟨⊥⟩
 instance : inhabited (opens α) := ⟨∅⟩
 
+
 @[simp] lemma inter_eq (U V : opens α) : U ∩ V = U ⊓ V := rfl
 @[simp] lemma union_eq (U V : opens α) : U ∪ V = U ⊔ V := rfl
 @[simp] lemma empty_eq : (∅ : opens α) = ⊥ := rfl
@@ -108,6 +87,9 @@ begin
   rw [@galois_connection.l_Sup (opens α) (set α) _ _ (subtype.val : opens α → set α) interior gc Us, set.sUnion_image],
   congr
 end
+
+lemma supr_def {ι} (s : ι → opens α) : (⨆ i, s i) = ⟨⋃ i, s i, is_open_Union $ λ i, (s i).2⟩ :=
+by { ext1, simp only [supr, opens.Sup_s, sUnion_image, bUnion_range], refl }
 
 def is_basis (B : set (opens α)) : Prop := is_topological_basis (subtype.val '' B)
 
@@ -163,6 +145,12 @@ end
 
 end opens
 
+/-- The open neighborhoods of a point. See also `opens` or `nhds`. -/
+def open_nhds_of (x : α) : Type* := { s : set α // is_open s ∧ x ∈ s }
+
+instance open_nhds_of.inhabited {α : Type*} [topological_space α] (x : α) :
+  inhabited (open_nhds_of x) := ⟨⟨set.univ, is_open_univ, set.mem_univ _⟩⟩
+
 end topological_space
 
 namespace continuous
@@ -176,5 +164,28 @@ def comap {f : α → β} (hf : continuous f) (V : opens β) : opens α :=
 lemma comap_mono {f : α → β} (hf : continuous f) {V W : opens β} (hVW : V ⊆ W) :
   hf.comap V ⊆ hf.comap W :=
 λ _ h, hVW h
+
+/-- The preimage of an open set, as an open set. -/
+protected def preimage (f : α → β) (hf : continuous f) (U : opens β) : opens α :=
+⟨f ⁻¹' U.1, hf U.1 U.2⟩
+
+@[simp] lemma coe_preimage {f : α → β} (hf : continuous f) (U : opens β) :
+  ↑(U.preimage f hf) = f ⁻¹' U := rfl
+
+@[simp] lemma preimage_val {f : α → β} (hf : continuous f) (U : opens β) :
+  (U.preimage f hf).1 = f ⁻¹' U.1 := rfl
+
+protected lemma preimage_compose {g : β → γ} {f : α → β} (hg : continuous g) (hf : continuous f)
+  (U : opens γ) : U.preimage _ (hg.comp hf) = (U.preimage g hg).preimage f hf :=
+by { ext1, simp only [preimage_val, preimage_preimage] }
+
+/-- A homeomorphism induces an equivalence on open sets, by taking preimages. -/
+@[simp] protected def equiv (f : α ≃ₜ β) : opens α ≃ opens β :=
+{ to_fun := opens.preimage _ f.symm.continuous,
+  inv_fun := opens.preimage f f.continuous,
+  left_inv := by { intro U, ext1,
+    simp only [preimage_val, ← preimage_comp, f.symm_comp_self, preimage_id] },
+  right_inv := by { intro U, ext1,
+    simp only [preimage_val, ← preimage_comp, f.self_comp_symm, preimage_id] } }
 
 end continuous

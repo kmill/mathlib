@@ -103,6 +103,12 @@ begin
   exact continuous_iff_is_closed.1 (h.symm.continuous) _
 end
 
+@[simp] lemma is_open_preimage (h : α ≃ₜ β) {s : set β} : is_open (h ⁻¹' s) ↔ is_open s :=
+begin
+  refine ⟨λ hs, _, h.continuous_to_fun s⟩,
+  rw [← (image_preimage_eq h.to_equiv.surjective : _ = s)], exact h.is_open_map _ hs
+end
+
 /-- If an bijective map `e : α ≃ β` is continuous and open, then it is a homeomorphism. -/
 def homeomorph_of_continuous_open (e : α ≃ β) (h₁ : continuous e) (h₂ : is_open_map e) :
   α ≃ₜ β :=
@@ -131,6 +137,7 @@ by simp [continuous_iff_continuous_on_univ, comp_continuous_on_iff]
 
 protected lemma quotient_map (h : α ≃ₜ β) : quotient_map h :=
 ⟨h.to_equiv.surjective, h.coinduced_eq.symm⟩
+
 
 /-- If two sets are equal, then they are homeomorphic. -/
 def set_congr {s t : set α} (h : s = t) : s ≃ₜ t :=
