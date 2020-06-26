@@ -1,48 +1,38 @@
 /-
 Copyright (c) 2017 Johannes Hölzl. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
-Authors: Johannes Hölzl, Mario Carneiro
-
-Subtype of open subsets in a topological space.
+Authors: Johannes Hölzl, Mario Carneiro, Floris van Doorn
 -/
 import topology.bases
-import topology.separation
+import topology.homeomorph
+/-!
+# Open sets
 
-open filter
-variables {α : Type*} {β : Type*} [topological_space α] [topological_space β]
+## Summary
+
+We define the subtype of open sets in a topological space.
+
+## Main Definitions
+
+- `opens α` is the type of open subsets of a topological space `α`.
+- `open_nhds_of x` is the type of open subsets of a topological space `α` containing `x : α`.
+-
+-/
+
+open filter set
+variables {α : Type*} {β : Type*} {γ : Type*}
+  [topological_space α] [topological_space β] [topological_space γ]
 
 namespace topological_space
 variable (α)
 /-- The type of open subsets of a topological space. -/
 def opens := {s : set α // is_open s}
 
-/-- The type of closed subsets of a topological space. -/
-def closeds := {s : set α // is_closed s}
-
-/-- The type of non-empty compact subsets of a topological space. The
-non-emptiness will be useful in metric spaces, as we will be able to put
-a distance (and not merely an edistance) on this space. -/
-def nonempty_compacts := {s : set α // s.nonempty ∧ compact s}
-
-section nonempty_compacts
-open topological_space set
-variable {α}
-
-instance nonempty_compacts.to_compact_space {p : nonempty_compacts α} : compact_space p.val :=
-⟨compact_iff_compact_univ.1 p.property.2⟩
-
-instance nonempty_compacts.to_nonempty {p : nonempty_compacts α} : nonempty p.val :=
-p.property.1.to_subtype
-
-/-- Associate to a nonempty compact subset the corresponding closed subset -/
-def nonempty_compacts.to_closeds [t2_space α] : nonempty_compacts α → closeds α :=
-set.inclusion $ λ s hs, hs.2.is_closed
-
-end nonempty_compacts
-
 variable {α}
 namespace opens
 instance : has_coe (opens α) (set α) := { coe := subtype.val }
+
+lemma val_eq_coe (U : opens α) : U.1 = ↑U := rfl
 
 instance : has_subset (opens α) :=
 { subset := λ U V, U.val ⊆ V.val }
@@ -109,6 +99,9 @@ begin
   congr
 end
 
+lemma supr_def {ι} (s : ι → opens α) : (⨆ i, s i) = ⟨⋃ i, s i, is_open_Union $ λ i, (s i).2⟩ :=
+by { ext1, simp only [supr, opens.Sup_s, sUnion_image, bUnion_range], refl }
+
 def is_basis (B : set (opens α)) : Prop := is_topological_basis (subtype.val '' B)
 
 lemma is_basis_iff_nbhd {B : set (opens α)} :
@@ -161,20 +154,47 @@ begin
     exact set.subset_sUnion_of_mem ⟨⟨V, _⟩, ⟨H₁, rfl⟩⟩ }
 end
 
+/-- The preimage of an open set, as an open set. -/
+def comap {f : α → β} (hf : continuous f) (V : opens β) : opens α :=
+⟨f ⁻¹' V.1, hf V.1 V.2⟩
+
+@[simp] lemma comap_id (U : opens α) : U.comap continuous_id = U := by { ext, refl }
+
+lemma comap_mono {f : α → β} (hf : continuous f) {V W : opens β} (hVW : V ⊆ W) :
+  V.comap hf ⊆ W.comap hf :=
+λ _ h, hVW h
+
+@[simp] lemma coe_comap {f : α → β} (hf : continuous f) (U : opens β) :
+  ↑(U.comap hf) = f ⁻¹' U := rfl
+
+@[simp] lemma comap_val {f : α → β} (hf : continuous f) (U : opens β) :
+  (U.comap hf).1 = f ⁻¹' U.1 := rfl
+
+protected lemma comap_compose {g : β → γ} {f : α → β} (hg : continuous g) (hf : continuous f)
+  (U : opens γ) : U.comap (hg.comp hf) = (U.comap hg).comap hf :=
+by { ext1, simp only [comap_val, preimage_preimage] }
+
+/-- A homeomorphism induces an equivalence on open sets, by taking comaps. -/
+@[simp] protected def equiv (f : α ≃ₜ β) : opens α ≃ opens β :=
+{ to_fun := opens.comap f.symm.continuous,
+  inv_fun := opens.comap f.continuous,
+  left_inv := by { intro U, ext1,
+    simp only [comap_val, ← preimage_comp, f.symm_comp_self, preimage_id] },
+  right_inv := by { intro U, ext1,
+    simp only [comap_val, ← preimage_comp, f.self_comp_symm, preimage_id] } }
+
 end opens
+
+/-- The open neighborhoods of a point. See also `opens` or `nhds`. -/
+def open_nhds_of (x : α) : Type* := { s : set α // is_open s ∧ x ∈ s }
+
+instance open_nhds_of.inhabited {α : Type*} [topological_space α] (x : α) :
+  inhabited (open_nhds_of x) := ⟨⟨set.univ, is_open_univ, set.mem_univ _⟩⟩
 
 end topological_space
 
 namespace continuous
 open topological_space
 
-def comap {f : α → β} (hf : continuous f) (V : opens β) : opens α :=
-⟨f ⁻¹' V.1, hf V.1 V.2⟩
-
-@[simp] lemma comap_id (U : opens α) : (continuous_id).comap U = U := by { ext, refl }
-
-lemma comap_mono {f : α → β} (hf : continuous f) {V W : opens β} (hVW : V ⊆ W) :
-  hf.comap V ⊆ hf.comap W :=
-λ _ h, hVW h
 
 end continuous
