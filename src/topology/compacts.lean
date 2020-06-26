@@ -62,24 +62,24 @@ subtype.eq h
 
 @[simp] lemma finset_sup_val {β} {K : β → compacts α} {s : finset β} :
   (s.sup K).1 = s.sup (λ x, (K x).1) :=
-subtype.sup_val _ _
+finset.sup_coe _ _
 
 instance : inhabited (compacts α) := ⟨⊥⟩
 
 /-- The image of a compact set under a continuous function. -/
-protected def image (f : α → β) (hf : continuous f) (K : compacts α) : compacts β :=
+protected def map (f : α → β) (hf : continuous f) (K : compacts α) : compacts β :=
 ⟨f '' K.1, K.2.image hf⟩
 
-@[simp] lemma image_val {f : α → β} (hf : continuous f) (K : compacts α) :
-  (K.image f hf).1 = f '' K.1 := rfl
+@[simp] lemma map_val {f : α → β} (hf : continuous f) (K : compacts α) :
+  (K.map f hf).1 = f '' K.1 := rfl
 
 /-- A homeomorphism induces an equivalence on compact sets, by taking the image. -/
 @[simp] protected def equiv (f : α ≃ₜ β) : compacts α ≃ compacts β :=
-{ to_fun := compacts.image f f.continuous,
-  inv_fun := compacts.image _ f.symm.continuous,
-  left_inv := by { intro K, ext1, simp only [image_val, ← image_comp, f.symm_comp_self, image_id] },
+{ to_fun := compacts.map f f.continuous,
+  inv_fun := compacts.map _ f.symm.continuous,
+  left_inv := by { intro K, ext1, simp only [map_val, ← image_comp, f.symm_comp_self, image_id] },
   right_inv := by { intro K, ext1,
-    simp only [image_val, ← image_comp, f.self_comp_symm, image_id] } }
+    simp only [map_val, ← image_comp, f.self_comp_symm, image_id] } }
 
 /-- The image of a compact set under a homeomorphism can also be expressed as a preimage. -/
 lemma equiv_to_fun_val (f : α ≃ₜ β) (K : compacts α) :

@@ -2,13 +2,26 @@
 Copyright (c) 2017 Johannes Hölzl. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Johannes Hölzl, Mario Carneiro, Floris van Doorn
-
-Subtype of open subsets in a topological space.
 -/
 import topology.bases
+import topology.homeomorph
+/-!
+# Open sets
 
-open filter
-variables {α : Type*} {β : Type*} [topological_space α] [topological_space β]
+## Summary
+
+We define the subtype of open sets in a topological space.
+
+## Main Definitions
+
+- `opens α` is the type of open subsets of a topological space `α`.
+- `open_nhds_of x` is the type of open subsets of a topological space `α` containing `x : α`.
+-
+-/
+
+open filter set
+variables {α : Type*} {β : Type*} {γ : Type*}
+  [topological_space α] [topological_space β] [topological_space γ]
 
 namespace topological_space
 variable (α)
@@ -143,6 +156,34 @@ begin
     exact set.subset_sUnion_of_mem ⟨⟨V, _⟩, ⟨H₁, rfl⟩⟩ }
 end
 
+def comap {f : α → β} (hf : continuous f) (V : opens β) : opens α :=
+⟨f ⁻¹' V.1, hf V.1 V.2⟩
+
+@[simp] lemma comap_id (U : opens α) : U.comap continuous_id = U := by { ext, refl }
+
+lemma comap_mono {f : α → β} (hf : continuous f) {V W : opens β} (hVW : V ⊆ W) :
+  V.comap hf ⊆ W.comap hf :=
+λ _ h, hVW h
+
+@[simp] lemma coe_comap {f : α → β} (hf : continuous f) (U : opens β) :
+  ↑(U.comap hf) = f ⁻¹' U := rfl
+
+@[simp] lemma comap_val {f : α → β} (hf : continuous f) (U : opens β) :
+  (U.comap hf).1 = f ⁻¹' U.1 := rfl
+
+protected lemma comap_compose {g : β → γ} {f : α → β} (hg : continuous g) (hf : continuous f)
+  (U : opens γ) : U.comap (hg.comp hf) = (U.comap hg).comap hf :=
+by { ext1, simp only [comap_val, preimage_preimage] }
+
+/-- A homeomorphism induces an equivalence on open sets, by taking comaps. -/
+@[simp] protected def equiv (f : α ≃ₜ β) : opens α ≃ opens β :=
+{ to_fun := opens.comap f.symm.continuous,
+  inv_fun := opens.comap f.continuous,
+  left_inv := by { intro U, ext1,
+    simp only [comap_val, ← preimage_comp, f.symm_comp_self, preimage_id] },
+  right_inv := by { intro U, ext1,
+    simp only [comap_val, ← preimage_comp, f.self_comp_symm, preimage_id] } }
+
 end opens
 
 /-- The open neighborhoods of a point. See also `opens` or `nhds`. -/
@@ -156,36 +197,5 @@ end topological_space
 namespace continuous
 open topological_space
 
-def comap {f : α → β} (hf : continuous f) (V : opens β) : opens α :=
-⟨f ⁻¹' V.1, hf V.1 V.2⟩
-
-@[simp] lemma comap_id (U : opens α) : (continuous_id).comap U = U := by { ext, refl }
-
-lemma comap_mono {f : α → β} (hf : continuous f) {V W : opens β} (hVW : V ⊆ W) :
-  hf.comap V ⊆ hf.comap W :=
-λ _ h, hVW h
-
-/-- The preimage of an open set, as an open set. -/
-protected def preimage (f : α → β) (hf : continuous f) (U : opens β) : opens α :=
-⟨f ⁻¹' U.1, hf U.1 U.2⟩
-
-@[simp] lemma coe_preimage {f : α → β} (hf : continuous f) (U : opens β) :
-  ↑(U.preimage f hf) = f ⁻¹' U := rfl
-
-@[simp] lemma preimage_val {f : α → β} (hf : continuous f) (U : opens β) :
-  (U.preimage f hf).1 = f ⁻¹' U.1 := rfl
-
-protected lemma preimage_compose {g : β → γ} {f : α → β} (hg : continuous g) (hf : continuous f)
-  (U : opens γ) : U.preimage _ (hg.comp hf) = (U.preimage g hg).preimage f hf :=
-by { ext1, simp only [preimage_val, preimage_preimage] }
-
-/-- A homeomorphism induces an equivalence on open sets, by taking preimages. -/
-@[simp] protected def equiv (f : α ≃ₜ β) : opens α ≃ opens β :=
-{ to_fun := opens.preimage _ f.symm.continuous,
-  inv_fun := opens.preimage f f.continuous,
-  left_inv := by { intro U, ext1,
-    simp only [preimage_val, ← preimage_comp, f.symm_comp_self, preimage_id] },
-  right_inv := by { intro U, ext1,
-    simp only [preimage_val, ← preimage_comp, f.self_comp_symm, preimage_id] } }
 
 end continuous
