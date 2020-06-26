@@ -399,6 +399,32 @@ lemma tsum_sigma [regular_space α] {γ : β → Type*} {f : (Σb:β, γ b) → 
   (h₁ : ∀b, summable (λc, f ⟨b, c⟩)) (h₂ : summable f) : (∑'p, f p) = (∑'b c, f ⟨b, c⟩) :=
 (tsum_eq_has_sum $ h₂.has_sum.sigma (assume b, (h₁ b).has_sum)).symm
 
+theorem tsum_supr_decode2 [complete_lattice β] [encodable γ] (m : β → α) (m0 : m ⊥ = 0)
+  (s : γ → β) : (∑' b : γ, m (s b)) = ∑' i : ℕ, m (⨆ b ∈ decode2 γ i, s b) :=
+begin
+  have H : ∀ n, m (⨆ b ∈ decode2 γ n, s b) ≠ 0 → (decode2 γ n).is_some,
+  { intros n h,
+    cases decode2 γ n with b,
+    { refine (h $ by simp [m0]).elim },
+    { exact rfl } },
+  refine tsum_eq_tsum_of_ne_zero_bij (λ n h, option.get (H n h)) _ _ _,
+  { intros m n hm hn e,
+    have := mem_decode2.1 (option.get_mem (H n hn)),
+    rwa [← e, mem_decode2.1 (option.get_mem (H m hm))] at this },
+  { intros b h,
+    refine ⟨encode b, _, _⟩,
+    { convert h, simp [ext_iff, encodek2] },
+    { exact option.get_of_mem _ (encodek2 _) } },
+  { intros n h,
+    transitivity, swap,
+    rw [show decode2 γ n = _, from option.get_mem (H n h)],
+    congr, simp [ext_iff, -option.some_get] }
+end
+
+theorem tsum_Union_decode2 [encodable γ] (m : set β → α) (m0 : m ∅ = 0)
+  (s : γ → set β) : (∑' b, m (s b)) = ∑' i, m (⋃ b ∈ decode2 β i, s b) :=
+tsum_supr_decode2 m m0 s
+
 end tsum
 
 section topological_group
