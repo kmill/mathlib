@@ -7,6 +7,7 @@ Measurable spaces -- σ-algberas
 -/
 import data.set.disjointed
 import data.set.countable
+import data.equiv.encodable.lattice
 
 /-!
 # Measurable spaces and measurable functions

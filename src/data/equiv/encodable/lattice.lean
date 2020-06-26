@@ -56,7 +56,7 @@ lemma nonempty_encodable {α} (t : finset α) : nonempty $ encodable {i // i ∈
 begin
   classical, induction t using finset.induction with x t hx ih,
   { refine ⟨⟨λ _, 0, λ _, none, λ ⟨x,y⟩, y.rec _⟩⟩ },
-  { cases ih with ih, exactI ⟨encodable.of_equiv _ (subtype_insert_equiv_option hx)⟩ }
+  { cases ih with ih, exactI ⟨encodable.of_equiv _ (finset.subtype_insert_equiv_option hx)⟩ }
 end
 
 end encodable
