@@ -2106,8 +2106,8 @@ theorem exists_nat_subset_range (s : finset ℕ) : ∃n : ℕ, s ⊆ range n :=
 lemma sup_coe {P : α → Prop}
   {Pbot : P ⊥} {Psup : ∀{{x y}}, P x → P y → P (x ⊔ y)}
   (t : finset β) (f : β → {x : α // P x}) :
-  (@sup _ _ (subtype.semilattice_sup_bot Pbot Psup) t f : α) = t.sup (λ x, (f x : α)) :=
-by { classical, rw [comp_sup_eq_sup_comp subtype.val]; intros; refl }
+  (@sup _ _ (subtype.semilattice_sup_bot Pbot Psup) t f : α) = t.sup (λ x, f x) :=
+by { classical, rw [comp_sup_eq_sup_comp coe]; intros; refl }
 
 end sup
 
@@ -2173,7 +2173,7 @@ comp_inf_eq_inf_comp g mono_g.map_inf top
 lemma inf_coe {P : α → Prop}
   {Ptop : P ⊤} {Pinf : ∀{{x y}}, P x → P y → P (x ⊓ y)}
   (t : finset β) (f : β → {x : α // P x}) :
-  (@inf _ _ (subtype.semilattice_inf_top Ptop Pinf) t f : α) = t.inf (λ x, f x : α) :=
+  (@inf _ _ (subtype.semilattice_inf_top Ptop Pinf) t f : α) = t.inf (λ x, f x) :=
 by { classical, rw [comp_inf_eq_inf_comp coe]; intros; refl }
 
 end inf
