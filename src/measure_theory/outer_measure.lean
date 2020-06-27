@@ -61,12 +61,13 @@ structure outer_measure (α : Type*) :=
 
 namespace outer_measure
 
-instance {α} : has_coe_to_fun (outer_measure α) := ⟨_, λ m, m.measure_of⟩
+section basic
+
+variables {α : Type*} {ms : set (outer_measure α)} {m : outer_measure α}
+
+instance : has_coe_to_fun (outer_measure α) := ⟨_, λ m, m.measure_of⟩
 
 @[simp] lemma measure_of_eq_coe {m : outer_measure α} {s : set α} : m.measure_of s = m s := rfl
-
-section basic
-variables {α : Type*} {ms : set (outer_measure α)} {m : outer_measure α}
 
 @[simp] theorem empty' (m : outer_measure α) : m ∅ = 0 := m.empty
 
