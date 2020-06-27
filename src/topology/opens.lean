@@ -156,6 +156,7 @@ begin
     exact set.subset_sUnion_of_mem ⟨⟨V, _⟩, ⟨H₁, rfl⟩⟩ }
 end
 
+/-- The preimage of an open set, as an open set. -/
 def comap {f : α → β} (hf : continuous f) (V : opens β) : opens α :=
 ⟨f ⁻¹' V.1, hf V.1 V.2⟩
 
