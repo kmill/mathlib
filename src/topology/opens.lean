@@ -89,7 +89,6 @@ instance : has_union (opens α) := ⟨λ U V, U ⊔ V⟩
 instance : has_emptyc (opens α) := ⟨⊥⟩
 instance : inhabited (opens α) := ⟨∅⟩
 
-
 @[simp] lemma inter_eq (U V : opens α) : U ∩ V = U ⊓ V := rfl
 @[simp] lemma union_eq (U V : opens α) : U ∪ V = U ⊔ V := rfl
 @[simp] lemma empty_eq : (∅ : opens α) = ⊥ := rfl
