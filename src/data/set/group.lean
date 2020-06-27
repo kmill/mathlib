@@ -65,6 +65,15 @@ rfl
 lemma inv_image [group α] (s : set α) : has_inv.inv '' s = s.inv :=
 by refine congr_fun (image_eq_preimage_of_inverse _ _) s; intro; simp only [inv_inv]
 
+@[simp, to_additive] lemma inter_inv [has_inv α] {s t : set α} : (s ∩ t).inv = s.inv ∩ t.inv :=
+preimage_inter
+
+@[simp, to_additive] lemma union_inv [has_inv α] {s t : set α} : (s ∪ t).inv = s.inv ∪ t.inv :=
+preimage_union
+
+@[simp, to_additive] lemma compl_inv [has_inv α] {s : set α} : (- s).inv = - s.inv :=
+preimage_compl
+
 @[simp, to_additive] protected lemma inv_inv [group α] {s : set α} : s.inv.inv = s :=
 by { simp only [set.inv, ← preimage_comp], convert preimage_id, ext x, apply inv_inv }
 

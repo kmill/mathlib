@@ -5,6 +5,7 @@ Authors: Yury G. Kudryashov, Patrick Massot
 -/
 import data.set.intervals.basic
 import data.equiv.mul_add
+import data.set.group
 
 /-!
 # (Pre)images of intervals
@@ -83,21 +84,21 @@ by simp [← Ioi_inter_Iio]
 ### Preimages under `x ↦ -x`
 -/
 
-@[simp] lemma preimage_neg_Ici : has_neg.neg ⁻¹' (Ici a) = Iic (-a) := ext $ λ x, le_neg
-@[simp] lemma preimage_neg_Iic : has_neg.neg ⁻¹' (Iic a) = Ici (-a) := ext $ λ x, neg_le
-@[simp] lemma preimage_neg_Ioi : has_neg.neg ⁻¹' (Ioi a) = Iio (-a) := ext $ λ x, lt_neg
-@[simp] lemma preimage_neg_Iio : has_neg.neg ⁻¹' (Iio a) = Ioi (-a) := ext $ λ x, neg_lt
+@[simp] lemma preimage_neg_Ici : (Ici a).neg = Iic (-a) := ext $ λ x, le_neg
+@[simp] lemma preimage_neg_Iic : (Iic a).neg = Ici (-a) := ext $ λ x, neg_le
+@[simp] lemma preimage_neg_Ioi : (Ioi a).neg = Iio (-a) := ext $ λ x, lt_neg
+@[simp] lemma preimage_neg_Iio : (Iio a).neg = Ioi (-a) := ext $ λ x, neg_lt
 
-@[simp] lemma preimage_neg_Icc : has_neg.neg ⁻¹' (Icc a b) = Icc (-b) (-a) :=
+@[simp] lemma preimage_neg_Icc : (Icc a b).neg = Icc (-b) (-a) :=
 by simp [← Ici_inter_Iic, inter_comm]
 
-@[simp] lemma preimage_neg_Ico : has_neg.neg ⁻¹' (Ico a b) = Ioc (-b) (-a) :=
+@[simp] lemma preimage_neg_Ico : (Ico a b).neg = Ioc (-b) (-a) :=
 by simp [← Ici_inter_Iio, ← Ioi_inter_Iic, inter_comm]
 
-@[simp] lemma preimage_neg_Ioc : has_neg.neg ⁻¹' (Ioc a b) = Ico (-b) (-a) :=
+@[simp] lemma preimage_neg_Ioc : (Ioc a b).neg = Ico (-b) (-a) :=
 by simp [← Ioi_inter_Iic, ← Ici_inter_Iio, inter_comm]
 
-@[simp] lemma preimage_neg_Ioo : has_neg.neg ⁻¹' (Ioo a b) = Ioo (-b) (-a) :=
+@[simp] lemma preimage_neg_Ioo : (Ioo a b).neg = Ioo (-b) (-a) :=
 by simp [← Ioi_inter_Iio, inter_comm]
 
 /-!
@@ -209,29 +210,29 @@ by simp [add_comm _ a]
 ### Images under `x ↦ -x`
 -/
 
-@[simp] lemma image_neg_Ici : has_neg.neg '' (Ici a) = Iic (-a) :=
-((equiv.neg G).image_eq_preimage _).trans $ preimage_neg_Ici _
+lemma image_neg_Ici : has_neg.neg '' (Ici a) = Iic (-a) :=
+by simp
 
-@[simp] lemma image_neg_Iic : has_neg.neg '' (Iic a) = Ici (-a) :=
-((equiv.neg G).image_eq_preimage _).trans $ preimage_neg_Iic _
+lemma image_neg_Iic : has_neg.neg '' (Iic a) = Ici (-a) :=
+by simp
 
-@[simp] lemma image_neg_Ioi : has_neg.neg '' (Ioi a) = Iio (-a) :=
-((equiv.neg G).image_eq_preimage _).trans $ preimage_neg_Ioi _
+lemma image_neg_Ioi : has_neg.neg '' (Ioi a) = Iio (-a) :=
+by simp
 
-@[simp] lemma image_neg_Iio : has_neg.neg '' (Iio a) = Ioi (-a) :=
-((equiv.neg G).image_eq_preimage _).trans $ preimage_neg_Iio _
+lemma image_neg_Iio : has_neg.neg '' (Iio a) = Ioi (-a) :=
+by simp
 
-@[simp] lemma image_neg_Icc : has_neg.neg '' (Icc a b) = Icc (-b) (-a) :=
-((equiv.neg G).image_eq_preimage _).trans $ preimage_neg_Icc _ _
+lemma image_neg_Icc : has_neg.neg '' (Icc a b) = Icc (-b) (-a) :=
+by simp
 
-@[simp] lemma image_neg_Ico : has_neg.neg '' (Ico a b) = Ioc (-b) (-a) :=
-((equiv.neg G).image_eq_preimage _).trans $ preimage_neg_Ico _ _
+lemma image_neg_Ico : has_neg.neg '' (Ico a b) = Ioc (-b) (-a) :=
+by simp
 
-@[simp] lemma image_neg_Ioc : has_neg.neg '' (Ioc a b) = Ico (-b) (-a) :=
-((equiv.neg G).image_eq_preimage _).trans $ preimage_neg_Ioc _ _
+lemma image_neg_Ioc : has_neg.neg '' (Ioc a b) = Ico (-b) (-a) :=
+by simp
 
-@[simp] lemma image_neg_Ioo : has_neg.neg '' (Ioo a b) = Ioo (-b) (-a) :=
-((equiv.neg G).image_eq_preimage _).trans $ preimage_neg_Ioo _ _
+lemma image_neg_Ioo : has_neg.neg '' (Ioo a b) = Ioo (-b) (-a) :=
+by simp
 
 /-!
 ### Images under `x ↦ a - x`
