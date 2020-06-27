@@ -272,7 +272,6 @@ begin
     ... ≤ r : le_of_lt hn
 end
 
-
 /- Can this prove be simplified? Currently it's pretty ugly. -/
 lemma trim_smul (m : outer_measure α) (x : ennreal) : (x • m).trim = x • m.trim :=
 begin
@@ -709,11 +708,13 @@ instance : complete_lattice (measure α) :=
   le_inf       := assume a b c hac hbc, le_Inf $ by simp [*, or_imp_distrib] {contextual := tt},
   .. measure.partial_order, .. measure.order_top, .. measure.order_bot }
 
+open outer_measure
+
 instance : has_scalar ennreal (measure α) :=
 ⟨λ x m, {
   m_Union := λ s hs h2s, by { simp only [measure_of_eq_coe, to_outer_measure_apply, smul_apply,
     ennreal.tsum_mul_left, measure_Union h2s hs] },
-  trimmed := by { convert trim_smul m.to_outer_measure x, ext1 s,
+  trimmed := by { convert m.to_outer_measure.trim_smul x, ext1 s,
     simp only [m.trimmed, smul_apply, measure_of_eq_coe] },
   ..x • m.to_outer_measure }⟩
 
