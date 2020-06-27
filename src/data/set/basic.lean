@@ -5,9 +5,10 @@ Authors: Jeremy Avigad, Leonardo de Moura
 -/
 import tactic.basic
 import tactic.finish
-import data.subtype
 import logic.unique
 import data.prod
+import data.set.defs
+import order.complete_defs
 
 /-!
 # Basic properties of sets
@@ -75,13 +76,6 @@ singleton, complement, powerset
 
 open function
 
-namespace set
-
-/-- Coercion from a set to the corresponding subtype. -/
-instance {α : Type*} : has_coe_to_sort (set α) := ⟨_, λ s, {x // x ∈ s}⟩
-
-end set
-
 section set_coe
 
 universe u
@@ -90,14 +84,6 @@ variables {α : Type u}
 
 theorem set.set_coe_eq_subtype (s : set α) :
   coe_sort.{(u+1) (u+2)} s = {x // x ∈ s} := rfl
-
-@[simp] theorem set_coe.forall {s : set α} {p : s → Prop} :
-  (∀ x : s, p x) ↔ (∀ x (h : x ∈ s), p ⟨x, h⟩) :=
-subtype.forall
-
-@[simp] theorem set_coe.exists {s : set α} {p : s → Prop} :
-  (∃ x : s, p x) ↔ (∃ x (h : x ∈ s), p ⟨x, h⟩) :=
-subtype.exists
 
 theorem set_coe.exists' {s : set α} {p : Π x, x ∈ s → Prop} :
   (∃ x (h : x ∈ s), p x h) ↔ (∃ x : s, p x.1 x.2)  :=
@@ -216,11 +202,6 @@ by { classical, exact not_not }
 
 /-! ### Non-empty sets -/
 
-/-- The property `s.nonempty` expresses the fact that the set `s` is not empty. It should be used
-in theorem assumptions instead of `∃ x, x ∈ s` or `s ≠ ∅` as it gives access to a nice API thanks
-to the dot notation. -/
-protected def nonempty (s : set α) : Prop := ∃ x, x ∈ s
-
 lemma nonempty_of_mem {x} (h : x ∈ s) : s.nonempty := ⟨x, h⟩
 
 theorem nonempty.not_subset_empty : s.nonempty  → ¬(s ⊆ ∅)
@@ -228,10 +209,6 @@ theorem nonempty.not_subset_empty : s.nonempty  → ¬(s ⊆ ∅)
 
 theorem nonempty.ne_empty : s.nonempty → s ≠ ∅
 | ⟨x, hx⟩ hs := by { rw hs at hx, exact hx }
-
-/-- Extract a witness from `s.nonempty`. This function might be used instead of case analysis
-on the argument. Note that it makes a proof depend on the `classical.choice` axiom. -/
-protected noncomputable def nonempty.some (h : s.nonempty) : α := classical.some h
 
 protected lemma nonempty.some_mem (h : s.nonempty) : h.some ∈ s := classical.some_spec h
 
@@ -342,9 +319,6 @@ lemma exists_mem_of_nonempty (α) : ∀ [nonempty α], ∃x:α, x ∈ (univ : se
 
 instance univ_decidable : decidable_pred (@set.univ α) :=
 λ x, is_true trivial
-
-/-- `diagonal α` is the subset of `α × α` consisting of all pairs of the form `(a, a)`. -/
-def diagonal (α : Type*) : set (α × α) := {p | p.1 = p.2}
 
 @[simp]
 lemma mem_diagonal {α : Type*} (x : α) : (x, x) ∈ diagonal α :=
@@ -959,12 +933,6 @@ theorem mem_powerset_iff (x s : set α) : x ∈ powerset s ↔ x ⊆ s := iff.rf
 
 /-! ### Inverse image -/
 
-/-- The preimage of `s : set β` by `f : α → β`, written `f ⁻¹' s`,
-  is the set of `x : α` such that `f x ∈ s`. -/
-def preimage {α : Type u} {β : Type v} (f : α → β) (s : set β) : set α := {x | f x ∈ s}
-
-infix ` ⁻¹' `:80 := preimage
-
 section preimage
 variables {f : α → β} {g : β → γ}
 
@@ -1034,8 +1002,6 @@ end preimage
 
 section image
 
-infix ` '' `:80 := image
-
 -- TODO(Jeremy): use bounded exists in image
 
 theorem mem_image_iff_bex {f : α → β} {s : set α} {y : β} :
@@ -1045,9 +1011,6 @@ theorem mem_image_eq (f : α → β) (s : set α) (y: β) : y ∈ f '' s = ∃ x
 
 @[simp] theorem mem_image (f : α → β) (s : set α) (y : β) :
   y ∈ f '' s ↔ ∃ x, x ∈ s ∧ f x = y := iff.rfl
-
-theorem mem_image_of_mem (f : α → β) {x : α} {a : set α} (h : x ∈ a) : f x ∈ f '' a :=
-⟨_, h, rfl⟩
 
 theorem mem_image_of_injective {f : α → β} {a : α} {s : set α} (hf : injective f) :
   f a ∈ f '' s ↔ a ∈ s :=
@@ -1312,10 +1275,6 @@ Hh.symm ▸ set.ext (λ ⟨a₁, a₂⟩, ⟨quotient.induction_on₂ a₁ a₂
   have h₃ : ⟦b₁⟧ = a₁ ∧ ⟦b₂⟧ = a₂ := prod.ext_iff.1 h₂,
     h₃.1 ▸ h₃.2 ▸ h₁⟩)
 
-/-- Restriction of `f` to `s` factors through `s.image_factorization f : s → f '' s`. -/
-def image_factorization (f : α → β) (s : set α) : s → f '' s :=
-λ p, ⟨f p.1, mem_image_of_mem f p.2⟩
-
 lemma image_factorization_eq {f : α → β} {s : set α} :
   subtype.val ∘ image_factorization f s = f ∘ subtype.val :=
 funext $ λ p, rfl
@@ -1327,10 +1286,6 @@ lemma surjective_onto_image {f : α → β} {s : set α} :
 end image
 
 /-! ### Subsingleton -/
-
-/-- A set `s` is a `subsingleton`, if it has at most one element. -/
-protected def subsingleton (s : set α) : Prop :=
-∀ ⦃x⦄ (hx : x ∈ s) ⦃y⦄ (hy : y ∈ s), x = y
 
 lemma subsingleton.mono (ht : t.subsingleton) (hst : s ⊆ t) : s.subsingleton :=
 λ x hx y hy, ht (hst hx) (hst hy)
@@ -1362,15 +1317,7 @@ section range
 variables {f : ι → α}
 open function
 
-/-- Range of a function.
-
-This function is more flexible than `f '' univ`, as the image requires that the domain is in Type
-and not an arbitrary Sort. -/
-def range (f : ι → α) : set α := {x | ∃y, f y = x}
-
 @[simp] theorem mem_range {x : α} : x ∈ range f ↔ ∃ y, f y = x := iff.rfl
-
-theorem mem_range_self (i : ι) : f i ∈ range f := ⟨i, rfl⟩
 
 theorem forall_range_iff {p : α → Prop} : (∀ a ∈ range f, p a) ↔ (∀ i, p (f i)) :=
 ⟨assume h i, h (f i) (mem_range_self _), assume h a ⟨i, (hi : f i = a)⟩, hi ▸ h i⟩
@@ -1477,10 +1424,6 @@ theorem preimage_singleton_eq_empty {f : α → β} {y : β} :
   f ⁻¹' {y} = ∅ ↔ y ∉ range f :=
 not_nonempty_iff_eq_empty.symm.trans $ not_congr preimage_singleton_nonempty
 
-/-- Any map `f : ι → β` factors through a map `range_factorization f : ι → range f`. -/
-def range_factorization (f : ι → β) : ι → range f :=
-λ i, ⟨f i, mem_range_self i⟩
-
 lemma range_factorization_eq {f : ι → β} :
   subtype.val ∘ range_factorization f = f :=
 funext $ λ i, rfl
@@ -1514,9 +1457,6 @@ end
 eq_univ_of_forall mem_range_self
 
 end range
-
-/-- The set `s` is pairwise `r` if `r x y` for all *distinct* `x y ∈ s`. -/
-def pairwise_on (s : set α) (r : α → α → Prop) := ∀ x ∈ s, ∀ y ∈ s, x ≠ y → r x y
 
 theorem pairwise_on.mono {s t : set α} {r}
   (h : t ⊆ s) (hp : pairwise_on s r) : pairwise_on t r :=
@@ -1603,11 +1543,6 @@ section prod
 
 variables {α : Type*} {β : Type*} {γ : Type*} {δ : Type*}
 variables {s s₁ s₂ : set α} {t t₁ t₂ : set β}
-
-/-- The cartesian product `prod s t` is the set of `(a, b)`
-  such that `a ∈ s` and `b ∈ t`. -/
-protected def prod (s : set α) (t : set β) : set (α × β) :=
-{p | p.1 ∈ s ∧ p.2 ∈ t}
 
 lemma prod_eq (s : set α) (t : set β) : set.prod s t = prod.fst ⁻¹' s ∩ prod.snd ⁻¹' t := rfl
 
@@ -1763,11 +1698,6 @@ end prod
 section pi
 variables {α : Type*} {π : α → Type*}
 
-/-- Given an index set `i` and a family of sets `s : Πa, set (π a)`, `pi i s`
-is the set of dependent functions `f : Πa, π a` such that `f a` belongs to `π a`
-whenever `a ∈ i`. -/
-def pi (i : set α) (s : Πa, set (π a)) : set (Πa, π a) := { f | ∀a∈i, f a ∈ s a }
-
 @[simp] lemma pi_empty_index (s : Πa, set (π a)) : pi ∅ s = univ := by ext; simp [pi]
 
 @[simp] lemma pi_insert_index (a : α) (i : set α) (s : Πa, set (π a)) :
@@ -1794,10 +1724,6 @@ end pi
 
 section inclusion
 variable {α : Type*}
-
-/-- `inclusion` is the "identity" function between two subsets `s` and `t`, where `s ⊆ t` -/
-def inclusion {s t : set α} (h : s ⊆ t) : s → t :=
-λ x : s, (⟨x, h x.2⟩ : t)
 
 @[simp] lemma inclusion_self {s : set α} (x : s) :
   inclusion (set.subset.refl _) x = x := by cases x; refl
@@ -1848,3 +1774,7 @@ lemma surjective.range_comp (g : α → β) {f : ι → α} (hf : surjective f) 
 by rw [range_comp, hf.range_eq, image_univ]
 
 end function
+
+theorem directed_on_image {α β} {r : α → α → Prop} {s} {f : β → α} :
+  directed_on r (f '' s) ↔ directed_on (f ⁻¹'o r) s :=
+by simp only [directed_on, set.ball_image_iff, set.bex_image_iff, order.preimage]

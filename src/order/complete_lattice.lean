@@ -6,41 +6,15 @@ Authors: Johannes Hölzl
 Theory of complete lattices.
 -/
 import order.bounds
+import order.complete_defs
 
-set_option old_structure_cmd true
 open set
 
 universes u v w w₂
 variables {α : Type u} {β : Type v} {ι : Sort w} {ι₂ : Sort w₂}
 
-/-- class for the `Sup` operator -/
-class has_Sup (α : Type u) := (Sup : set α → α)
-/-- class for the `Inf` operator -/
-class has_Inf (α : Type u) := (Inf : set α → α)
-/-- Supremum of a set -/
-def Sup [has_Sup α] : set α → α := has_Sup.Sup
-/-- Infimum of a set -/
-def Inf [has_Inf α] : set α → α := has_Inf.Inf
-/-- Indexed supremum -/
-def supr [has_Sup α] (s : ι → α) : α := Sup (range s)
-/-- Indexed infimum -/
-def infi [has_Inf α] (s : ι → α) : α := Inf (range s)
-
 lemma has_Inf_to_nonempty (α) [has_Inf α] : nonempty α := ⟨Inf ∅⟩
 lemma has_Sup_to_nonempty (α) [has_Sup α] : nonempty α := ⟨Sup ∅⟩
-
-notation `⨆` binders `, ` r:(scoped f, supr f) := r
-notation `⨅` binders `, ` r:(scoped f, infi f) := r
-
-section prio
-set_option default_priority 100 -- see Note [default priority]
-/-- A complete lattice is a bounded lattice which
-  has suprema and infima for every subset. -/
-class complete_lattice (α : Type u) extends bounded_lattice α, has_Sup α, has_Inf α :=
-(le_Sup : ∀s, ∀a∈s, a ≤ Sup s)
-(Sup_le : ∀s a, (∀b∈s, b ≤ a) → Sup s ≤ a)
-(Inf_le : ∀s, ∀a∈s, Inf s ≤ a)
-(le_Inf : ∀s a, (∀b∈s, a ≤ b) → a ≤ Inf s)
 
 /-- Create a `complete_lattice` from a `partial_order` and `Inf` function
 that returns the greatest lower bound of a set. Usually this constructor provides
@@ -93,10 +67,6 @@ def complete_lattice_of_Sup (α : Type*) [H1 : partial_order α]
   Inf_le := λ s a ha, (is_lub_Sup (lower_bounds s)).2 (λ b hb, hb ha),
   le_Inf := λ s a ha, (is_lub_Sup (lower_bounds s)).1 ha,
   .. H1, .. H2 }
-
-/-- A complete linear order is a linear order whose lattice structure is complete. -/
-class complete_linear_order (α : Type u) extends complete_lattice α, decidable_linear_order α
-end prio
 
 section
 variables [complete_lattice α] {s t : set α} {a b : α}

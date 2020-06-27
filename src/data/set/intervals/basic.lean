@@ -6,6 +6,7 @@ Authors: Johannes Hölzl, Mario Carneiro, Patrick Massot, Yury Kudryashov
 import tactic.tauto
 import algebra.order_functions
 import algebra.ordered_field
+import data.set.basic
 
 /-!
 # Intervals

@@ -3,7 +3,14 @@ Copyright (c) 2014 Jeremy Avigad. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jeremy Avigad, Mario Carneiro
 -/
-import data.set.basic
+import tactic.lint
+import tactic.interactive
+import tactic.rcases
+import tactic.push_neg
+import algebra.order
+import data.set.defs
+import data.prod
+
 open function
 
 /-!
@@ -435,10 +442,6 @@ def directed_on (s : set α) := ∀ (x ∈ s) (y ∈ s), ∃z ∈ s, x ≼ z ∧
 
 theorem directed_on_iff_directed {s} : @directed_on α r s ↔ directed r (coe : s → α) :=
 by simp [directed, directed_on]; refine ball_congr (λ x hx, by simp; refl)
-
-theorem directed_on_image {s} {f : β → α} :
-  directed_on r (f '' s) ↔ directed_on (f ⁻¹'o r) s :=
-by simp only [directed_on, set.ball_image_iff, set.bex_image_iff, order.preimage]
 
 theorem directed_on.mono {s : set α} (h : directed_on r s)
   {r' : α → α → Prop} (H : ∀ {a b}, r a b → r' a b) :
