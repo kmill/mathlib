@@ -132,7 +132,7 @@ begin
   rw [encodable.Union_decode2, tsum_Union_decode2],
   { exact measure'_Union_nat _ _
       (λ n, encodable.Union_decode2_cases is_measurable.empty hm)
-      (mU _ (measurable_space.Union_decode2_disjoint_on hd)) },
+      (mU _ (encodable.Union_decode2_disjoint_on hd)) },
   { apply measure'_empty },
 end
 
@@ -394,7 +394,7 @@ by rw [← le_zero_iff_eq, ← h₂]; exact measure_mono h
 
 lemma exists_is_measurable_superset_of_measure_eq_zero {s : set α} (h : μ s = 0) :
   ∃t, s ⊆ t ∧ is_measurable t ∧ μ t = 0 :=
-exists_is_measurable_superset_of_trim_eq_zero (by rw [← measure_eq_trim, h])
+outer_measure.exists_is_measurable_superset_of_trim_eq_zero (by rw [← measure_eq_trim, h])
 
 theorem measure_Union_le {β} [encodable β] (s : β → set α) : μ (⋃i, s i) ≤ (∑'i, μ (s i)) :=
 μ.to_outer_measure.Union _
