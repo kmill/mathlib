@@ -25,7 +25,7 @@ extension of the restricted measure.
 In the first part of the file we define operations on arbitrary functions defined on measurable
 sets.
 
-Measures on `α` form a complete lattice.
+Measures on `α` form a complete lattice, and are closed under scalar multiplication with `ennreal`.
 
 Given a measure, the null sets are the sets where `μ s = 0`, where `μ` denotes the corresponding
 outer measure (so `s` might not be measurable). We can then define the completion of `μ` as the
@@ -708,6 +708,25 @@ instance : complete_lattice (measure α) :=
   inf_le_right := assume a b, Inf_le $ by simp,
   le_inf       := assume a b c hac hbc, le_Inf $ by simp [*, or_imp_distrib] {contextual := tt},
   .. measure.partial_order, .. measure.order_top, .. measure.order_bot }
+
+instance : has_scalar ennreal (measure α) :=
+⟨λ x m, {
+  m_Union := λ s hs h2s, by { simp only [measure_of_eq_coe, to_outer_measure_apply, smul_apply,
+    ennreal.tsum_mul_left, measure_Union h2s hs] },
+  trimmed := by { convert trim_smul m.to_outer_measure x, ext1 s,
+    simp only [m.trimmed, smul_apply, measure_of_eq_coe] },
+  ..x • m.to_outer_measure }⟩
+
+@[simp] theorem smul_apply (a : ennreal) (m : measure α) (s : set α) : (a • m) s = a * m s := rfl
+
+instance : semimodule ennreal (measure α) :=
+{ smul_add := λ a m₁ m₂, ext $ λ s hs, mul_add _ _ _,
+  add_smul := λ a b m, ext $ λ s hs, add_mul _ _ _,
+  mul_smul := λ a b m, ext $ λ s hs, mul_assoc _ _ _,
+  one_smul := λ m, ext $ λ s hs, one_mul _,
+  zero_smul := λ m, ext $ λ s hs, zero_mul _,
+  smul_zero := λ a, ext $ λ s hs, mul_zero _,
+  ..measure.has_scalar }
 
 end
 
