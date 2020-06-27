@@ -17,12 +17,13 @@ Reference:
 
 -/
 import topology.instances.real
+import data.equiv.encodable.lattice
 
 noncomputable theory
 open finset filter function classical
 open_locale topological_space classical big_operators
 
-variables {α : Type*} {β : Type*} {γ : Type*}
+variables {α : Type*} {β : Type*} {γ : Type*} {δ : Type*}
 
 section has_sum
 variables [add_comm_monoid α] [topological_space α]
@@ -401,7 +402,9 @@ lemma tsum_sigma [regular_space α] {γ : β → Type*} {f : (Σb:β, γ b) → 
 
 section encodable
 open encodable
-theorem tsum_supr_decode2 [complete_lattice β] [encodable γ] (m : β → α) (m0 : m ⊥ = 0)
+variable [encodable γ]
+
+theorem tsum_supr_decode2 [complete_lattice β] (m : β → α) (m0 : m ⊥ = 0)
   (s : γ → β) : (∑' b : γ, m (s b)) = ∑' i : ℕ, m (⨆ b ∈ decode2 γ i, s b) :=
 begin
   have H : ∀ n, m (⨆ b ∈ decode2 γ n, s b) ≠ 0 → (decode2 γ n).is_some,
@@ -423,9 +426,40 @@ begin
     congr, simp [ext_iff, -option.some_get] }
 end
 
-theorem tsum_Union_decode2 [encodable γ] (m : set β → α) (m0 : m ∅ = 0)
+theorem tsum_Union_decode2 (m : set β → α) (m0 : m ∅ = 0)
   (s : γ → set β) : (∑' b, m (s b)) = ∑' i, m (⋃ b ∈ decode2 γ i, s b) :=
 tsum_supr_decode2 m m0 s
+
+/-! Some properties about measure-like functions.
+  These could also be functions defined on complete sublattices of sets, with the property
+  that they are countably sub-additive.
+  `R` will probably instantiated with `(≤)` in all applications.
+-/
+
+/-- If a function is countably sub-additive then it is sub-additive on encodable types -/
+theorem supr_R_tsum [complete_lattice β] (m : β → α) (m0 : m ⊥ = 0)
+  (R : α → α → Prop) (m_supr : ∀(s : ℕ → β), R (m (⨆ i, s i)) ((∑' i, m (s i))))
+  (s : γ → β) : R (m (⨆ b : γ, s b)) (∑' b : γ, m (s b)) :=
+by { rw [supr_decode2, tsum_supr_decode2 _ m0 s], exact m_supr _ }
+
+/-- If a function is countably sub-additive then it is sub-additive on finite sets -/
+theorem supr_R_sum [complete_lattice β] (m : β → α) (m0 : m ⊥ = 0)
+  (R : α → α → Prop) (m_supr : ∀(s : ℕ → β), R (m (⨆ i, s i)) ((∑' i, m (s i))))
+  (s : δ → β) (t : finset δ) :
+  R (m (⨆ d ∈ t, s d)) (t.sum $ λ d, m (s d)) :=
+by { cases nonempty_encodable t, rw [supr_subtype'], convert supr_R_tsum m m0 R m_supr _,
+     rw [sum_eq_tsum_subtype], assumption }
+
+/-- If a function is countably sub-additive then it is binary sub-additive -/
+theorem sup_R_add [complete_lattice β] (m : β → α) (m0 : m ⊥ = 0)
+  (R : α → α → Prop) (m_supr : ∀(s : ℕ → β), R (m (⨆ i, s i)) ((∑' i, m (s i))))
+  (s₁ s₂ : β) : R (m (s₁ ⊔ s₂)) (m s₁ + m s₂) :=
+begin
+  convert supr_R_tsum m m0 R m_supr (λ b, cond b s₁ s₂),
+  { simp only [supr_bool_eq, cond] },
+  { rw tsum_fintype, simp only [finset.sum_insert, not_false_iff, fintype.univ_bool,
+      finset.mem_singleton, cond, finset.sum_singleton] }
+end
 
 end encodable
 
