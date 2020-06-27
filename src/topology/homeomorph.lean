@@ -138,7 +138,6 @@ by simp [continuous_iff_continuous_on_univ, comp_continuous_on_iff]
 protected lemma quotient_map (h : α ≃ₜ β) : quotient_map h :=
 ⟨h.to_equiv.surjective, h.coinduced_eq.symm⟩
 
-
 /-- If two sets are equal, then they are homeomorphic. -/
 def set_congr {s t : set α} (h : s = t) : s ≃ₜ t :=
 { continuous_to_fun := continuous_subtype_mk _ continuous_subtype_val,

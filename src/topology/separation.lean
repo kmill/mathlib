@@ -166,7 +166,6 @@ lemma tendsto_nhds_unique [t2_space α] {f : β → α} {l : filter β} {a b : �
   (hl : l ≠ ⊥) (ha : tendsto f l (𝓝 a)) (hb : tendsto f l (𝓝 b)) : a = b :=
 eq_of_nhds_ne_bot $ ne_bot_of_le_ne_bot (map_ne_bot hl) $ le_inf ha hb
 
-
 section lim
 variables [t2_space α] {f : filter α}
 

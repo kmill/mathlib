@@ -63,7 +63,6 @@ lemma summable_zero : summable (λb, 0 : β → α) := has_sum_zero.summable
 lemma tsum_eq_zero_of_not_summable (h : ¬ summable f) : (∑'b, f b) = 0 :=
 by simp [tsum, h]
 
-
 /-- If a function `f` vanishes outside of a finite set `s`, then it `has_sum` `∑ b in s, f b`. -/
 lemma has_sum_sum_of_ne_finset_zero (hf : ∀b∉s, f b = 0) : has_sum f (∑ b in s, f b) :=
 tendsto_infi' s $ tendsto.congr'

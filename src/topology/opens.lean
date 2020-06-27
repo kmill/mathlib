@@ -32,7 +32,6 @@ variable {α}
 namespace opens
 instance : has_coe (opens α) (set α) := { coe := subtype.val }
 
-/- should this be a simp lemma? -/
 lemma val_eq_coe (U : opens α) : U.1 = ↑U := rfl
 
 instance : has_subset (opens α) :=
