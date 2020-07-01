@@ -410,18 +410,18 @@ variables [topological_space α] [group α] [topological_group α]
 /-- Given a open neighborhood `U` of `1` there is a open neighborhood `V` of `1`
   such that `VV ⊆ U`. -/
 lemma one_open_separated_mul {U : set α} (h1U : is_open U) (h2U : (1 : α) ∈ U) :
-  ∃ V : set α, is_open V ∧ (1 : α) ∈ V ∧ V.mul V ⊆ U :=
+  ∃ V : set α, is_open V ∧ (1 : α) ∈ V ∧ V * V ⊆ U :=
 begin
   rcases exists_nhds_square (continuous_mul U h1U) (by simp only [mem_preimage, one_mul, h2U] :
     ((1 : α), (1 : α)) ∈ (λ p : α × α, p.1 * p.2) ⁻¹' U) with ⟨V, h1V, h2V, h3V⟩,
   refine ⟨V, h1V, h2V, _⟩,
-  rwa [← image_subset_iff, mul_image_prod] at h3V
+  rwa [← image_subset_iff, image_mul_prod] at h3V
 end
 
 /-- Given a compact set `K` inside an open set `U`, there is a open neighborhood `V` of `1`
   such that `KV ⊆ U`. -/
 lemma compact_open_separated_mul {K U : set α} (hK : compact K) (hU : is_open U) (hKU : K ⊆ U) :
-  ∃ V : set α, is_open V ∧ (1 : α) ∈ V ∧ K.mul V ⊆ U :=
+  ∃ V : set α, is_open V ∧ (1 : α) ∈ V ∧ K * V ⊆ U :=
 begin
   let W : α → set α := λ x, (λ y, x * y) ⁻¹' U,
   have h1W : ∀ x, is_open (W x) := λ x, continuous_mul_left x U hU,
